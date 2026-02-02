@@ -1,4 +1,4 @@
-console.log('SpeedSlap v1.2 running!');
+console.log('SpeedSlap v1.3 running!');
 
 let isSpeedOn = false;
 let currentSpeed = 1;
@@ -12,6 +12,9 @@ let minSpeed = 0.5;
 let maxSpeed = 10;
 let toggleSpeed = 3;
 let enableScrollWheel = true;
+let showOverlay = true;
+let showToasts = true;
+let enableCaptions = true;
 
 // Default hotkeys
 let hotkeys = {
@@ -137,7 +140,7 @@ speedSlider.addEventListener('input', updateSpeed);
 
 // Load settings from sync storage and apply
 function loadSettings() {
-    chrome.storage.sync.get(['minSpeed', 'maxSpeed', 'toggleSpeed', 'hotkeys', 'enableScrollWheel'], (result) => {
+    chrome.storage.sync.get(['minSpeed', 'maxSpeed', 'toggleSpeed', 'hotkeys', 'enableScrollWheel', 'showOverlay', 'showToasts', 'enableCaptions'], (result) => {
         if (result.minSpeed !== undefined) {
             minSpeed = parseFloat(result.minSpeed);
             speedSlider.min = minSpeed;
@@ -155,7 +158,18 @@ function loadSettings() {
         if (result.enableScrollWheel !== undefined) {
             enableScrollWheel = result.enableScrollWheel;
         }
-        console.log(`Settings loaded: min=${minSpeed}, max=${maxSpeed}, toggle=${toggleSpeed}, scrollWheel=${enableScrollWheel}`);
+        if (result.showOverlay !== undefined) {
+            showOverlay = result.showOverlay;
+            updateOverlayVisibility();
+        }
+        if (result.showToasts !== undefined) {
+            showToasts = result.showToasts;
+        }
+        if (result.enableCaptions !== undefined) {
+            enableCaptions = result.enableCaptions;
+            updateCaptionsInterval();
+        }
+        console.log(`Settings loaded: min=${minSpeed}, max=${maxSpeed}, toggle=${toggleSpeed}, scrollWheel=${enableScrollWheel}, overlay=${showOverlay}, toasts=${showToasts}, captions=${enableCaptions}`);
     });
 }
 
@@ -179,11 +193,27 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
         if (changes.enableScrollWheel) {
             enableScrollWheel = changes.enableScrollWheel.newValue;
         }
+        if (changes.showOverlay) {
+            showOverlay = changes.showOverlay.newValue;
+            updateOverlayVisibility();
+        }
+        if (changes.showToasts) {
+            showToasts = changes.showToasts.newValue;
+        }
+        if (changes.enableCaptions) {
+            enableCaptions = changes.enableCaptions.newValue;
+            updateCaptionsInterval();
+        }
         showNotification('Settings updated!');
     }
 });
 
 loadSettings();
+
+// Update overlay visibility based on settings
+function updateOverlayVisibility() {
+    controlsContainer.style.display = showOverlay ? 'flex' : 'none';
+}
 
 const sliderLabel = document.createElement('span');
 Object.assign(sliderLabel.style, {
@@ -254,6 +284,7 @@ function updateSpeed() {
 }
 
 function showNotification(message) {
+    if (!showToasts) return;
     const notification = document.createElement('div');
     Object.assign(notification.style, {
         position: 'fixed',
@@ -408,6 +439,7 @@ controlsContainer.addEventListener('wheel', (e) => {
 let captionsInterval;
 
 function startCaptionsInterval() {
+    if (!enableCaptions) return;
     captionsInterval = setInterval(() => {
         if (!captionsSet) {
             console.log('Attempting to set captions...');
@@ -419,17 +451,35 @@ function startCaptionsInterval() {
     }, 2000);
 }
 
+function stopCaptionsInterval() {
+    if (captionsInterval) {
+        clearInterval(captionsInterval);
+        captionsInterval = null;
+    }
+}
+
+function updateCaptionsInterval() {
+    if (enableCaptions) {
+        if (!captionsInterval && !captionsSet) {
+            startCaptionsInterval();
+        }
+    } else {
+        stopCaptionsInterval();
+    }
+}
+
 // Start the initial interval
 startCaptionsInterval();
 
 // Use yt-navigate-finish event to reset the captions flag with a delay
 document.addEventListener('yt-navigate-finish', () => {
+    if (!enableCaptions) return;
     console.log('yt-navigate-finish detected, scheduling captions flag reset...');
     setTimeout(() => {
         captionsSet = false;
         console.log('Captions flag reset for new video.');
         // Clear the old interval and restart it
-        clearInterval(captionsInterval);
+        stopCaptionsInterval();
         startCaptionsInterval();
     }, 2000);
 });

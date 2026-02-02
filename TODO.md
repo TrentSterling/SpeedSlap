@@ -21,6 +21,9 @@
 - [x] Redesigned overlay with branding
 - [x] Toast notifications with icon
 - [x] GitHub Pages landing page
+- [x] Toggle for overlay visibility
+- [x] Toggle for toast notifications
+- [x] Toggle for captions
 
 ---
 
@@ -52,6 +55,19 @@
 ---
 
 ## Changelog
+
+### v1.3 (2026-02-02) - Settings Overhaul
+
+**New Toggles:**
+- Show/hide floating overlay
+- Show/hide toast notifications
+- Enable/disable force captions
+
+**UI:**
+- New "UI & Features" section in popup
+- All features now configurable
+
+---
 
 ### v1.2 (2026-02-02) - SpeedSlap Rebrand
 

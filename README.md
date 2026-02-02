@@ -2,7 +2,7 @@
 
 Advanced YouTube playback speed control with customizable hotkeys, SLAP toggle, and scroll wheel support.
 
-![Version](https://img.shields.io/badge/version-1.2-orange)
+![Version](https://img.shields.io/badge/version-1.3-orange)
 ![Manifest](https://img.shields.io/badge/manifest-v3-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -88,11 +88,20 @@ Click the extension icon to configure:
 - **Speed Range** - Min and max playback speeds
 - **SLAP Toggle Speed** - Speed when toggling ON
 - **Keyboard Shortcuts** - Customize all hotkeys
-- **Scroll Wheel** - Enable/disable scroll wheel control
+- **Show Overlay** - Toggle the floating control panel
+- **Scroll Wheel** - Enable/disable scroll wheel control on overlay
+- **Show Toasts** - Toggle toast notifications
+- **Force Captions** - Auto-enable English captions
 
 Settings apply immediately to any open YouTube tabs.
 
 ## Changelog
+
+### v1.3 (2026-02-02)
+- Toggle for floating overlay visibility
+- Toggle for toast notifications
+- Toggle for force-enable captions
+- Beefed up settings popup with new "UI & Features" section
 
 ### v1.2 (2026-02-02)
 - Rebranded to **SpeedSlap**

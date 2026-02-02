@@ -145,7 +145,7 @@ function stopRecording() {
 
 // Load saved settings when popup opens
 document.addEventListener('DOMContentLoaded', () => {
-    chrome.storage.sync.get(['minSpeed', 'maxSpeed', 'toggleSpeed', 'hotkeys', 'enableScrollWheel'], (result) => {
+    chrome.storage.sync.get(['minSpeed', 'maxSpeed', 'toggleSpeed', 'hotkeys', 'enableScrollWheel', 'showOverlay', 'showToasts', 'enableCaptions'], (result) => {
         if (result.minSpeed !== undefined) {
             document.getElementById('minSpeed').value = result.minSpeed;
         }
@@ -160,6 +160,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (result.enableScrollWheel !== undefined) {
             document.getElementById('enableScrollWheel').checked = result.enableScrollWheel;
+        }
+        if (result.showOverlay !== undefined) {
+            document.getElementById('showOverlay').checked = result.showOverlay;
+        }
+        if (result.showToasts !== undefined) {
+            document.getElementById('showToasts').checked = result.showToasts;
+        }
+        if (result.enableCaptions !== undefined) {
+            document.getElementById('enableCaptions').checked = result.enableCaptions;
         }
         updateHotkeyDisplays();
     });
@@ -178,6 +187,9 @@ document.getElementById('saveSettings').addEventListener('click', () => {
     const maxSpeed = parseFloat(document.getElementById('maxSpeed').value);
     const toggleSpeed = parseFloat(document.getElementById('toggleSpeed').value);
     const enableScrollWheel = document.getElementById('enableScrollWheel').checked;
+    const showOverlay = document.getElementById('showOverlay').checked;
+    const showToasts = document.getElementById('showToasts').checked;
+    const enableCaptions = document.getElementById('enableCaptions').checked;
 
     // Validate
     if (minSpeed >= maxSpeed) {
@@ -189,7 +201,7 @@ document.getElementById('saveSettings').addEventListener('click', () => {
         return;
     }
 
-    chrome.storage.sync.set({ minSpeed, maxSpeed, toggleSpeed, hotkeys, enableScrollWheel }, () => {
+    chrome.storage.sync.set({ minSpeed, maxSpeed, toggleSpeed, hotkeys, enableScrollWheel, showOverlay, showToasts, enableCaptions }, () => {
         const msg = document.getElementById('savedMsg');
         msg.style.display = 'block';
         setTimeout(() => {
