@@ -56,6 +56,13 @@
 
 ## Changelog
 
+### v1.3.2 (2026-02-02) - Live Updates
+- Overlay now updates live when settings change (no refresh needed)
+
+### v1.3.1 (2026-02-02) - Autosave & Browser Limit
+- Autosave - settings save automatically on change, no button needed
+- Max speed capped at 16x (browser HTML5 video limit)
+
 ### v1.3 (2026-02-02) - Settings Overhaul
 
 **New Toggles:**
