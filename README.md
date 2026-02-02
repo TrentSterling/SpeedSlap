@@ -8,7 +8,7 @@ Advanced YouTube playback speed control with customizable hotkeys, SLAP toggle, 
 
 ## Features
 
-- **Speed Range:** 0.5x to 10x playback (configurable)
+- **Speed Range:** 0.5x to 16x playback (configurable, 16x is browser limit)
 - **SLAP Toggle:** Quick switch between 1x and custom speed (default 3x)
 - **Customizable Hotkeys:** Rebind all keyboard shortcuts with modifier support
 - **Scroll Wheel Control:** Adjust speed by scrolling on the overlay
@@ -99,7 +99,7 @@ Settings apply immediately to any open YouTube tabs.
 
 ### v1.3.1 (2026-02-02)
 - Autosave - settings save automatically on change, no button needed
-- Max speed limit increased to 20x
+- Max speed capped at 16x (browser HTML5 video limit)
 
 ### v1.3 (2026-02-02)
 - Toggle for floating overlay visibility
