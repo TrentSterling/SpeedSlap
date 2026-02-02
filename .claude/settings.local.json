@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push:*)",
+      "Bash(zip:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAllow max speed up to 20x\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(gh release delete:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nSpeedSlap v1.3.1 - Autosave & 20x max speed\n\n- Autosave: settings save automatically on change, no button needed\n- Max speed limit increased to 20x\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}
