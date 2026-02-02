@@ -6,6 +6,18 @@ Advanced YouTube playback speed control with customizable hotkeys, SLAP toggle, 
 ![Manifest](https://img.shields.io/badge/manifest-v3-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/youtube-demo.png" alt="SpeedSlap on YouTube" width="600">
+</p>
+
+<p align="center">
+  <img src="screenshots/overlay.png" alt="Overlay widget" width="180">
+  <img src="screenshots/popup-top.png" alt="Settings" width="220">
+  <img src="screenshots/popup-bottom.png" alt="Settings toggles" width="220">
+</p>
+
 ## Features
 
 - **Speed Range:** 0.5x to 16x playback (configurable, 16x is browser limit)
