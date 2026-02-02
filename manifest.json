@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "SpeedSlap",
+  "version": "1.2",
+  "description": "Advanced YouTube playback speed control with customizable hotkeys and SLAP toggle",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["injected.js", "app_icon.png"],
+      "matches": ["*://*.youtube.com/*"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "app_icon.png",
+      "48": "app_icon.png",
+      "128": "app_icon.png"
+    }
+  },
+  "icons": {
+    "16": "app_icon.png",
+    "48": "app_icon.png",
+    "128": "app_icon.png"
+  }
+}
