@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SpeedSlap</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 0;
+            min-width: 300px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #fff;
+            margin: 0;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(135deg, #FF5733 0%, #ff6b47 100%);
+            border-bottom: 2px solid #ff8566;
+        }
+        .header img {
+            width: 36px;
+            height: 36px;
+        }
+        .header-text h1 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .header-text span {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 16px;
+        }
+        h3 {
+            margin: 16px 0 10px 0;
+            color: #FF5733;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-top: 1px solid #333;
+            padding-top: 14px;
+        }
+        .setting {
+            margin-bottom: 14px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #aaa;
+        }
+        input[type="number"] {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background: #252525;
+            color: #fff;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #FF5733;
+        }
+        .range-inputs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .range-inputs span {
+            color: #666;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #FF5733 0%, #ff6b47 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 12px;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(255, 87, 51, 0.3);
+        }
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 87, 51, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .saved {
+            text-align: center;
+            color: #4CAF50;
+            margin-top: 10px;
+            display: none;
+            font-size: 13px;
+            padding: 8px;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 6px;
+        }
+        .hotkey-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+        }
+        .hotkey-label {
+            font-size: 13px;
+            color: #aaa;
+            flex: 1;
+        }
+        .hotkey-value {
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            color: #fff;
+            min-width: 80px;
+            text-align: center;
+            margin-right: 8px;
+            font-family: monospace;
+        }
+        .hotkey-value.recording {
+            background: #3d2a20;
+            border-color: #FF5733;
+            color: #FF5733;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .change-btn {
+            width: auto;
+            padding: 6px 12px;
+            font-size: 11px;
+            margin-top: 0;
+            background: #444;
+            box-shadow: none;
+            border-radius: 6px;
+        }
+        .change-btn:hover {
+            background: #555;
+            box-shadow: none;
+        }
+        .change-btn.recording {
+            background: #FF5733;
+        }
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            padding: 10px;
+            background: #252525;
+            border-radius: 8px;
+        }
+        .checkbox-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #FF5733;
+        }
+        .checkbox-row label {
+            display: inline;
+            margin: 0;
+            cursor: pointer;
+            color: #ccc;
+        }
+        .footer {
+            text-align: center;
+            padding: 12px;
+            font-size: 11px;
+            color: #555;
+            border-top: 1px solid #333;
+        }
+        .footer a {
+            color: #FF5733;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="app_icon.png" alt="SpeedSlap">
+        <div class="header-text">
+            <h1>SpeedSlap</h1>
+            <span>v1.2 - YouTube Speed Control</span>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="setting">
+            <label>Speed Range:</label>
+            <div class="range-inputs">
+                <input type="number" id="minSpeed" min="0.1" max="5" step="0.1" value="0.5">
+                <span>to</span>
+                <input type="number" id="maxSpeed" min="1" max="16" step="0.1" value="10">
+            </div>
+        </div>
+
+        <div class="setting">
+            <label>SLAP Toggle Speed:</label>
+            <input type="number" id="toggleSpeed" min="1" max="16" step="0.5" value="3">
+        </div>
+
+        <h3>Keyboard Shortcuts</h3>
+
+        <div class="hotkey-row">
+            <span class="hotkey-label">Toggle Speed</span>
+            <span class="hotkey-value" id="hotkeyToggle">Numpad +</span>
+            <button class="change-btn" data-action="toggle">Change</button>
+        </div>
+
+        <div class="hotkey-row">
+            <span class="hotkey-label">Speed Up</span>
+            <span class="hotkey-value" id="hotkeySpeedUp">]</span>
+            <button class="change-btn" data-action="speedUp">Change</button>
+        </div>
+
+        <div class="hotkey-row">
+            <span class="hotkey-label">Speed Down</span>
+            <span class="hotkey-value" id="hotkeySpeedDown">[</span>
+            <button class="change-btn" data-action="speedDown">Change</button>
+        </div>
+
+        <div class="hotkey-row">
+            <span class="hotkey-label">Reset to 1x</span>
+            <span class="hotkey-value" id="hotkeyReset">`</span>
+            <button class="change-btn" data-action="reset">Change</button>
+        </div>
+
+        <div class="checkbox-row">
+            <input type="checkbox" id="enableScrollWheel" checked>
+            <label for="enableScrollWheel">Enable scroll wheel on overlay</label>
+        </div>
+
+        <button id="saveSettings">Save Settings</button>
+        <div class="saved" id="savedMsg">Settings saved!</div>
+    </div>
+
+    <div class="footer">
+        Made by <a href="https://tront.xyz" target="_blank">tront.xyz</a>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

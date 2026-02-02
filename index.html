@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeedSlap - YouTube Speed Control Chrome Extension</title>
+    <meta name="description" content="SpeedSlap - Chrome extension for advanced YouTube playback speed control with customizable hotkeys, SLAP toggle, and scroll wheel support.">
+    <meta name="keywords" content="speedslap, youtube, speed, playback, chrome extension, video speed, hotkeys, slap">
+    <meta name="author" content="Trent Sterling">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="SpeedSlap">
+    <meta property="og:description" content="Advanced YouTube playback speed control with customizable hotkeys, SLAP toggle, and scroll wheel support.">
+    <meta property="og:type" content="website">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --accent: #FF5733;
+            --accent-light: #ff7b5a;
+            --accent-glow: rgba(255, 87, 51, 0.35);
+            --cyan: #58a6ff;
+            --cyan-dim: rgba(88, 166, 255, 0.15);
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --border: #30363d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            background-image:
+                linear-gradient(rgba(255, 87, 51, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 87, 51, 0.015) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 70px 0 60px;
+            text-align: center;
+            position: relative;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 400px;
+            background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0.12;
+            pointer-events: none;
+        }
+
+        .hero-icon-container {
+            margin: 0 auto 24px auto;
+            filter: drop-shadow(0 0 20px var(--accent-glow));
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .hero-icon-container:hover {
+            transform: scale(1.03);
+            filter: drop-shadow(0 0 35px var(--accent-glow));
+        }
+
+        .hero-icon-container canvas {
+            width: 450px;
+            height: 160px;
+        }
+
+        .hero h1 {
+            font-size: 2.6rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .tagline {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 580px;
+            margin: 0 auto 24px;
+        }
+
+        .hero .version {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            color: var(--cyan);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 28px;
+            border: 1px solid var(--border);
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text-secondary);
+            background: var(--border);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 48px;
+            color: var(--text-primary);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            transition: all 0.25s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 87, 51, 0.4);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+
+        .feature-icon {
+            font-size: 1.6rem;
+            margin-bottom: 14px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Shortcuts Section */
+        .shortcuts {
+            padding: 80px 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .shortcuts-table {
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        .shortcut-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .shortcut-row:last-child {
+            border-bottom: none;
+        }
+
+        .shortcut-key {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255, 87, 51, 0.5);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        .shortcut-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Install Section */
+        .install {
+            padding: 80px 0;
+        }
+
+        .install-steps {
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .install-step {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 16px;
+            align-items: flex-start;
+            padding: 18px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .install-step:hover {
+            border-color: rgba(255, 87, 51, 0.3);
+            transform: translateX(4px);
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .step-content h4 {
+            margin-bottom: 4px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .step-content code {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--cyan);
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 0;
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+
+        footer p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        footer a:hover {
+            color: var(--accent-light);
+        }
+
+        .footer-links {
+            margin-top: 12px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero .tagline {
+                font-size: 1rem;
+            }
+
+            .hero-icon-container canvas {
+                width: 320px;
+                height: 115px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 280px;
+                justify-content: center;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-icon-container">
+                <canvas id="heroIcon" width="1400" height="500"></canvas>
+            </div>
+            <h1>SpeedSlap</h1>
+            <p class="tagline">Advanced YouTube playback speed control with customizable hotkeys, SLAP toggle, and scroll wheel support.</p>
+            <span class="version">v1.2 - Manifest V3</span>
+            <div class="cta-buttons">
+                <a href="https://github.com/TrentSterling/SpeedSlap/releases" class="btn btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                    Download Extension
+                </a>
+                <a href="https://github.com/TrentSterling/SpeedSlap" class="btn btn-secondary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎚️</div>
+                    <h3>Wide Speed Range</h3>
+                    <p>Control playback from 0.5x to 10x speed. Perfect for tutorials, lectures, or binge-watching.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⌨️</div>
+                    <h3>Custom Hotkeys</h3>
+                    <p>Rebind all keyboard shortcuts to your preference. Supports Ctrl, Shift, and Alt modifiers.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🖱️</div>
+                    <h3>Scroll Wheel Control</h3>
+                    <p>Hover over the overlay and scroll to adjust speed. Hold Shift for fine 0.1x adjustments.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>SLAP Toggle</h3>
+                    <p>Instantly switch between normal and your preferred fast speed with one keypress.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h3>Persistent Settings</h3>
+                    <p>Your speed, position, and settings are saved and synced across browser sessions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Modern UI</h3>
+                    <p>Sleek dark theme overlay and popup that matches YouTube's aesthetic perfectly.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shortcuts -->
+    <section class="shortcuts">
+        <div class="container">
+            <h2 class="section-title">Keyboard Shortcuts</h2>
+            <div class="shortcuts-table">
+                <div class="shortcut-row">
+                    <span class="shortcut-key">Numpad +</span>
+                    <span class="shortcut-desc">Toggle speed ON/OFF</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">`</span>
+                    <span class="shortcut-desc">Reset to 1x speed</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">]</span>
+                    <span class="shortcut-desc">Increase speed +0.5x</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">[</span>
+                    <span class="shortcut-desc">Decrease speed -0.5x</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">Shift + ]</span>
+                    <span class="shortcut-desc">Fine increase +0.1x</span>
+                </div>
+                <div class="shortcut-row">
+                    <span class="shortcut-key">Shift + [</span>
+                    <span class="shortcut-desc">Fine decrease -0.1x</span>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 20px; color: var(--text-secondary); font-size: 0.85rem;">
+                All shortcuts are fully customizable in the extension settings.
+            </p>
+        </div>
+    </section>
+
+    <!-- Install -->
+    <section class="install">
+        <div class="container">
+            <h2 class="section-title">Installation</h2>
+            <div class="install-steps">
+                <div class="install-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Download the Extension</h4>
+                        <p>Get the latest release from GitHub and extract the ZIP file.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Open Chrome Extensions</h4>
+                        <p>Navigate to <code>chrome://extensions/</code> in your browser.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Enable Developer Mode</h4>
+                        <p>Toggle the "Developer mode" switch in the top right corner.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Load the Extension</h4>
+                        <p>Click "Load unpacked" and select the extracted folder.</p>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>Enjoy!</h4>
+                        <p>Go to YouTube and start controlling your playback speed like a pro.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>Built by <a href="https://tront.xyz" target="_blank">Trent Sterling</a></p>
+            <div class="footer-links">
+                <a href="https://github.com/TrentSterling/SpeedSlap">GitHub</a>
+                <a href="https://github.com/TrentSterling/SpeedSlap/issues">Report Bug</a>
+                <span style="color: var(--border);">MIT License</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Animated Hero Icon
+        const canvas = document.getElementById('heroIcon');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+        const CX = W / 2;
+        const CY = H / 2;
+
+        // Default values from icon generator - optimized for display
+        const config = {
+            globalX: 100,
+            scale: 0.9,
+            cRadius: 224,
+            cThick: 45,
+            cX: 60,
+            tSize: 130,
+            tRound: 25,
+            lCount: 5,
+            lThick: 40,
+            lSpread: 100,
+            lGap: 35,
+            lAnchor: -192,
+            lines: [
+                { len: 196, split: 66 },
+                { len: 300, split: 0 },
+                { len: 311, split: 77 },
+                { len: 280, split: 0 },
+                { len: 150, split: 0 }
+            ],
+            animSpeed: 15,
+            wobbleStr: 10
+        };
+
+        function drawRoundedPoly(ctx, points, radius) {
+            const len = points.length;
+            const pts = [...points, points[0], points[1]];
+            const startX = (pts[0].x + pts[1].x) / 2;
+            const startY = (pts[0].y + pts[1].y) / 2;
+            ctx.moveTo(startX, startY);
+            for (let i = 1; i <= len; i++) {
+                const p2 = pts[i];
+                const p3 = pts[i + 1];
+                ctx.arcTo(p2.x, p2.y, p3.x, p3.y, radius);
+            }
+            ctx.closePath();
+        }
+
+        function drawLineWithSplit(startX, endX, y, thick, splitSize, progress) {
+            ctx.lineWidth = thick;
+            ctx.beginPath();
+            const totalWidth = endX - startX;
+
+            if (splitSize <= 0) {
+                ctx.moveTo(startX, y);
+                ctx.lineTo(endX, y);
+                ctx.stroke();
+                return;
+            }
+
+            if (progress > 1.0) {
+                ctx.moveTo(startX, y);
+                ctx.lineTo(endX, y);
+                ctx.stroke();
+                return;
+            }
+
+            const travelDist = totalWidth + splitSize;
+            const currentPos = endX + (splitSize / 2) - (travelDist * progress);
+            const gapStart = currentPos - (splitSize / 2);
+            const gapEnd = currentPos + (splitSize / 2);
+
+            if (gapStart > startX) {
+                ctx.moveTo(startX, y);
+                ctx.lineTo(Math.min(endX, gapStart), y);
+            }
+            if (gapEnd < endX) {
+                ctx.moveTo(Math.max(startX, gapEnd), y);
+                ctx.lineTo(endX, y);
+            }
+            ctx.stroke();
+        }
+
+        function draw() {
+            const time = performance.now();
+            const speed = config.animSpeed / 5000;
+            const wobbleStr = config.wobbleStr;
+
+            // Clear with transparent
+            ctx.clearRect(0, 0, W, H);
+
+            ctx.save();
+            ctx.translate(CX, CY);
+            ctx.translate(config.globalX, 0);
+            ctx.scale(config.scale, config.scale);
+            ctx.translate(-CX, -CY);
+
+            const fg = '#ffffff';
+
+            // Bounce
+            const bounceY = Math.sin(time * 0.01) * wobbleStr;
+            const circleCenter = { x: CX + config.cX, y: CY + bounceY };
+
+            const blockHeight = (config.lCount - 1) * config.lSpread;
+            const startY = CY - (blockHeight / 2);
+
+            ctx.lineCap = 'round';
+            ctx.fillStyle = fg;
+            ctx.strokeStyle = fg;
+
+            // Draw Speed Lines
+            for (let i = 0; i < config.lCount; i++) {
+                const line = config.lines[i];
+                let split = line.split;
+                if (split === 0) split = 50; // Auto for animation
+
+                if (line.len <= 0) continue;
+
+                const y = startY + (i * config.lSpread);
+                const staticCenterX = CX + config.cX;
+                const endX = staticCenterX + config.lAnchor;
+                const lineStartX = endX - line.len;
+
+                const offsets = [0, 0.2, 0.7, 0.4, 0.9];
+                const lineOffset = offsets[i % offsets.length];
+                const progress = (time * speed + lineOffset) % 1.6;
+
+                drawLineWithSplit(lineStartX, endX, y, config.lThick, split, progress);
+            }
+
+            // Masking Circle (punch hole for lines)
+            const maskRadius = config.cRadius + (config.cThick / 2) + config.lGap;
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(circleCenter.x, circleCenter.y, Math.max(0, maskRadius), 0, Math.PI * 2);
+            ctx.fillStyle = 'black';
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+
+            // Main Ring
+            ctx.beginPath();
+            ctx.arc(circleCenter.x, circleCenter.y, config.cRadius, 0, Math.PI * 2);
+            ctx.lineWidth = config.cThick;
+            ctx.strokeStyle = fg;
+            ctx.stroke();
+
+            // Triangle (filled)
+            const triCenter = { x: circleCenter.x, y: circleCenter.y };
+            const p1 = { x: triCenter.x + config.tSize, y: triCenter.y };
+            const p2 = { x: triCenter.x - (config.tSize * 0.5), y: triCenter.y + (config.tSize * 0.866) };
+            const p3 = { x: triCenter.x - (config.tSize * 0.5), y: triCenter.y - (config.tSize * 0.866) };
+
+            ctx.beginPath();
+            drawRoundedPoly(ctx, [p1, p2, p3], config.tRound);
+            ctx.fillStyle = fg;
+            ctx.fill();
+
+            ctx.restore();
+
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+</body>
+</html>

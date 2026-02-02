@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Generator Ultimate</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --panel-color: #161b22;
+            --text-color: #e6edf3;
+            --accent-color: #2f81f7;
+            --border-color: #30363d;
+            --input-bg: #0d1117;
+        }
+
+        body {
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 12px;
+        }
+
+        .controls {
+            width: 400px;
+            background-color: var(--panel-color);
+            padding: 15px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-shrink: 0;
+            user-select: none;
+            z-index: 10;
+        }
+
+        .controls::-webkit-scrollbar { width: 6px; }
+        .controls::-webkit-scrollbar-track { background: var(--bg-color); }
+        .controls::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+        h2 { margin: 0; font-size: 14px; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        h3 { margin: 15px 0 5px 0; font-size: 11px; color: var(--accent-color); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; border-left: 2px solid var(--accent-color); padding-left: 8px; }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 4px 0;
+        }
+
+        .row { display: flex; gap: 10px; align-items: center; }
+        .row .control-group { flex: 1; }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #8b949e;
+            font-weight: 600;
+        }
+
+        .val-display {
+            color: var(--accent-color);
+            background: rgba(47, 129, 247, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: #30363d;
+            border-radius: 2px;
+            appearance: none;
+            outline: none;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #e6edf3;
+            cursor: pointer;
+            border: 2px solid var(--panel-color);
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { background: var(--accent-color); }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--accent-color);
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0;
+            background: none;
+            cursor: pointer;
+        }
+
+        .hidden { display: none !important; }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        button {
+            background-color: #238636;
+            color: #fff;
+            border: 1px solid rgba(240,246,252,0.1);
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+        button.primary {
+            grid-column: 1 / -1;
+            font-size: 13px;
+            padding: 15px;
+            background-color: var(--accent-color);
+            border-color: transparent;
+        }
+        button:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+
+        .preview-area {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #050505;
+            background-image: 
+                linear-gradient(45deg, #12161c 25%, transparent 25%), 
+                linear-gradient(-45deg, #12161c 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #12161c 75%), 
+                linear-gradient(-45deg, transparent 75%, #12161c 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            padding: 40px;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+            border: 1px solid #30363d;
+        }
+
+        .preview-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        #guideCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            filter: none;
+            border: none;
+        }
+
+        #guideCanvas.editing {
+            pointer-events: auto;
+            cursor: crosshair;
+        }
+
+        .guide-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .guide-overlay.editing {
+            pointer-events: auto;
+            cursor: crosshair;
+        }
+
+        .guide-line {
+            position: absolute;
+            background: rgba(0, 200, 255, 0.7);
+            pointer-events: auto;
+            cursor: move;
+        }
+
+        .guide-line.horizontal {
+            height: 1px;
+            width: 100%;
+            left: 0;
+        }
+
+        .guide-line.vertical {
+            width: 1px;
+            height: 100%;
+            top: 0;
+        }
+
+        .guide-line:hover {
+            background: rgba(255, 100, 100, 0.9);
+        }
+
+        .ruler-toggle {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 8px 0;
+        }
+
+        .ruler-toggle label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <div class="row" style="justify-content: space-between; border-bottom: 1px solid #30363d; padding-bottom:10px; margin-bottom:10px;">
+            <h2>Icon Generator</h2>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <label style="margin:0; cursor:pointer;">Animate <input type="checkbox" id="animateToggle" checked></label>
+            </div>
+        </div>
+        
+        <!-- Global Positioning -->
+        <div class="control-group">
+            <label>Master X Position <span class="val-display" id="v_globalX"></span></label>
+            <input type="range" id="globalX" min="-500" max="500" value="0">
+        </div>
+        <div class="control-group">
+            <label>Master Scale <span class="val-display" id="v_masterScale"></span></label>
+            <input type="range" id="masterScale" min="50" max="150" value="100">
+        </div>
+
+        <h3>Guides & Rulers</h3>
+        <div class="ruler-toggle">
+            <label><input type="checkbox" id="showGrid"> Grid</label>
+            <label><input type="checkbox" id="showCenter"> Center Cross</label>
+            <label><input type="checkbox" id="showGuides"> Custom Guides</label>
+        </div>
+        <div class="control-group" id="gridSizeControl">
+            <label>Grid Divisions <span class="val-display" id="v_gridSize">3</span></label>
+            <input type="range" id="gridSize" min="2" max="10" value="3">
+        </div>
+        <div class="control-group" id="guideControls" style="display:none;">
+            <label style="font-size:10px; color:#8b949e;">Click canvas to add guides. Drag to move. Double-click to delete.</label>
+            <button onclick="clearAllGuides()" style="background:#da3633; margin-top:5px;">Clear All Guides</button>
+        </div>
+
+        <hr style="width:100%; border:0; border-top:1px solid #30363d; margin: 10px 0;">
+
+        <div class="row">
+            <div class="control-group">
+                <label>BG Color</label>
+                <input type="color" id="bgColor" value="#161b22">
+            </div>
+            <div class="control-group" style="justify-content: flex-end;">
+                 <label style="cursor:pointer; margin-bottom:5px;">Transparent <input type="checkbox" id="transparentBg"></label>
+            </div>
+            <div class="control-group">
+                <label>Icon Color</label>
+                <input type="color" id="fgColor" value="#ffffff">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="control-group">
+                <label>Flow Speed <span class="val-display" id="v_animSpeed"></span></label>
+                <input type="range" id="animSpeed" min="1" max="50" value="15">
+            </div>
+            <div class="control-group">
+                <label>Bounce <span class="val-display" id="v_wobbleStr"></span></label>
+                <input type="range" id="wobbleStr" min="0" max="50" value="12">
+            </div>
+        </div>
+
+        <h3>Circle Geometry</h3>
+        <div class="control-group"><label>Radius <span class="val-display" id="v_cRadius"></span></label><input type="range" id="cRadius" min="50" max="400" value="224"></div>
+        <div class="control-group"><label>Stroke <span class="val-display" id="v_cThick"></span></label><input type="range" id="cThick" min="5" max="100" value="45"></div>
+        <div class="control-group"><label>Pos X <span class="val-display" id="v_cX"></span></label><input type="range" id="cX" min="-300" max="300" value="60"></div>
+
+        <h3>Triangle</h3>
+        <div class="control-group" style="flex-direction:row; align-items:center; gap:15px;">
+            <label style="cursor:pointer; margin:0;"><input type="checkbox" id="filledTriangle"> Filled</label>
+        </div>
+        <div class="control-group"><label>Size <span class="val-display" id="v_tSize"></span></label><input type="range" id="tSize" min="20" max="300" value="130"></div>
+        <div class="control-group" id="triangleStrokeControl"><label>Stroke <span class="val-display" id="v_tThick"></span></label><input type="range" id="tThick" min="5" max="100" value="45"></div>
+        <div class="control-group"><label>Roundness <span class="val-display" id="v_tRound"></span></label><input type="range" id="tRound" min="0" max="80" value="25"></div>
+        <div class="control-group"><label>Offset X <span class="val-display" id="v_tOffX"></span></label><input type="range" id="tOffX" min="-100" max="100" value="0"></div>
+
+        <h3>Speed Lines</h3>
+        <div class="control-group"><label>Count <span class="val-display" id="v_lCount"></span></label><input type="range" id="lCount" min="2" max="6" value="5"></div>
+        <div class="control-group"><label>Thickness <span class="val-display" id="v_lThick"></span></label><input type="range" id="lThick" min="5" max="100" value="40"></div>
+        <div class="control-group"><label>Vertical Spread <span class="val-display" id="v_lSpread"></span></label><input type="range" id="lSpread" min="20" max="150" value="100"></div>
+        <div class="control-group"><label>Circle Gap <span class="val-display" id="v_lGap"></span></label><input type="range" id="lGap" min="-50" max="150" value="35"></div>
+        <div class="control-group"><label>Anchor X <span class="val-display" id="v_lAnchor"></span></label><input type="range" id="lAnchor" min="-400" max="400" value="-192"></div>
+
+        <h3>Line Tweaks (Splits)</h3>
+        <!-- Line 1 -->
+        <div class="control-group line-ctrl" id="lc1">
+            <label>Line 1 Length <span class="val-display" id="v_len1"></span></label>
+            <input type="range" id="len1" min="0" max="600" value="196">
+            <label style="font-size: 10px; margin-top:2px; opacity:0.7;">Split Size <span class="val-display" id="v_split1"></span></label>
+            <input type="range" id="split1" min="0" max="200" value="66">
+        </div>
+        <!-- Line 2 -->
+        <div class="control-group line-ctrl" id="lc2">
+            <label>Line 2 Length <span class="val-display" id="v_len2"></span></label>
+            <input type="range" id="len2" min="0" max="600" value="300">
+            <label style="font-size: 10px; margin-top:2px; opacity:0.7;">Split Size <span class="val-display" id="v_split2"></span></label>
+            <input type="range" id="split2" min="0" max="200" value="0">
+        </div>
+        <!-- Line 3 -->
+        <div class="control-group line-ctrl" id="lc3">
+            <label>Line 3 Length <span class="val-display" id="v_len3"></span></label>
+            <input type="range" id="len3" min="0" max="600" value="311">
+            <label style="font-size: 10px; margin-top:2px; opacity:0.7;">Split Size <span class="val-display" id="v_split3"></span></label>
+            <input type="range" id="split3" min="0" max="200" value="77">
+        </div>
+        <!-- Line 4 -->
+        <div class="control-group line-ctrl" id="lc4">
+            <label>Line 4 Length <span class="val-display" id="v_len4"></span></label>
+            <input type="range" id="len4" min="0" max="600" value="280">
+            <label style="font-size: 10px; margin-top:2px; opacity:0.7;">Split Size <span class="val-display" id="v_split4"></span></label>
+            <input type="range" id="split4" min="0" max="200" value="0">
+        </div>
+        <!-- Line 5 -->
+        <div class="control-group line-ctrl hidden" id="lc5">
+            <label>Line 5 Length <span class="val-display" id="v_len5"></span></label>
+            <input type="range" id="len5" min="0" max="600" value="150">
+            <label style="font-size: 10px; margin-top:2px; opacity:0.7;">Split Size <span class="val-display" id="v_split5"></span></label>
+            <input type="range" id="split5" min="0" max="200" value="0">
+        </div>
+        <!-- Line 6 -->
+        <div class="control-group line-ctrl hidden" id="lc6">
+            <label>Line 6 Length <span class="val-display" id="v_len6"></span></label>
+            <input type="range" id="len6" min="0" max="600" value="150">
+            <label style="font-size: 10px; margin-top:2px; opacity:0.7;">Split Size <span class="val-display" id="v_split6"></span></label>
+            <input type="range" id="split6" min="0" max="200" value="0">
+        </div>
+
+        <button class="primary" onclick="downloadSize('full')">Download Master .PNG</button>
+        <div class="btn-group">
+            <button onclick="downloadSize(128)">128px</button>
+            <button onclick="downloadSize(48)">48px</button>
+            <button onclick="downloadSize(16)">16px</button>
+        </div>
+        <button onclick="resetToDefaults()" style="background:#6e40c9; margin-top:15px;">Reset All to Defaults</button>
+    </div>
+
+    <div class="preview-area">
+        <div class="preview-wrapper" id="previewWrapper">
+            <canvas id="canvas" width="1024" height="1024"></canvas>
+            <canvas id="guideCanvas" class="guide-overlay" width="1024" height="1024"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Parameter Mapping
+        const params = {
+            bg: 'bgColor', fg: 'fgColor', scale: 'masterScale', gX: 'globalX',
+            speed: 'animSpeed', wobble: 'wobbleStr',
+            cr: 'cRadius', ct: 'cThick', cx: 'cX',
+            ts: 'tSize', tr: 'tRound', tox: 'tOffX', tt: 'tThick',
+            lc: 'lCount', lt: 'lThick', ls: 'lSpread', lg: 'lGap', la: 'lAnchor',
+            len1: 'len1', split1: 'split1',
+            len2: 'len2', split2: 'split2',
+            len3: 'len3', split3: 'split3',
+            len4: 'len4', split4: 'split4',
+            len5: 'len5', split5: 'split5',
+            len6: 'len6', split6: 'split6'
+        };
+
+        const els = {};
+        let animationId;
+        
+        // Init Inputs
+        Object.keys(params).forEach(k => {
+            const id = params[k];
+            els[k] = document.getElementById(id);
+            const display = document.getElementById(`v_${id}`);
+            
+            els[k].addEventListener('input', () => {
+                if(display) display.textContent = els[k].value;
+                updateUI();
+                if(!document.getElementById('animateToggle').checked) draw();
+            });
+            if(display) display.textContent = els[k].value;
+        });
+
+        // Toggle Listeners
+        const animateToggle = document.getElementById('animateToggle');
+        const transparentToggle = document.getElementById('transparentBg');
+        const filledTriangleToggle = document.getElementById('filledTriangle');
+        const triangleStrokeControl = document.getElementById('triangleStrokeControl');
+
+        animateToggle.addEventListener('change', () => {
+            if(animateToggle.checked) loop();
+            else {
+                cancelAnimationFrame(animationId);
+                draw();
+            }
+        });
+
+        transparentToggle.addEventListener('change', () => {
+            if(!animateToggle.checked) draw();
+        });
+
+        filledTriangleToggle.addEventListener('change', () => {
+            // Hide stroke control when filled
+            triangleStrokeControl.style.display = filledTriangleToggle.checked ? 'none' : 'block';
+            if(!animateToggle.checked) draw();
+        });
+
+        function val(key) {
+            if(els[key].type === 'color') return els[key].value;
+            return parseInt(els[key].value, 10);
+        }
+
+        function updateUI() {
+            const count = val('lc');
+            for(let i=1; i<=6; i++) {
+                const div = document.getElementById(`lc${i}`);
+                if(div) {
+                    if(i <= count) div.classList.remove('hidden');
+                    else div.classList.add('hidden');
+                }
+            }
+        }
+
+        function drawLineWithSplit(startX, endX, y, thick, splitSize, progress, isAnimated) {
+            ctx.lineWidth = thick;
+            ctx.beginPath();
+            const totalWidth = endX - startX;
+            
+            // Static Look
+            if (!isAnimated) {
+                if (splitSize > 0 && splitSize < totalWidth) {
+                    const dashLen = 40; 
+                    ctx.moveTo(startX, y);
+                    ctx.lineTo(startX + dashLen, y);
+                    ctx.moveTo(startX + dashLen + splitSize, y);
+                    ctx.lineTo(endX, y);
+                } else {
+                    ctx.moveTo(startX, y);
+                    ctx.lineTo(endX, y);
+                }
+                ctx.stroke();
+                return;
+            }
+
+            // Animated Look
+            if (splitSize <= 0) {
+                ctx.moveTo(startX, y);
+                ctx.lineTo(endX, y);
+                ctx.stroke();
+                return;
+            }
+
+            // Cooldown Phase (Progress > 1.0)
+            if (progress > 1.0) {
+                ctx.moveTo(startX, y);
+                ctx.lineTo(endX, y);
+                ctx.stroke();
+                return;
+            }
+
+            // Gap sliding logic
+            const travelDist = totalWidth + splitSize;
+            const currentPos = endX + (splitSize/2) - (travelDist * progress);
+
+            const gapStart = currentPos - (splitSize / 2);
+            const gapEnd = currentPos + (splitSize / 2);
+
+            if (gapStart > startX) {
+                ctx.moveTo(startX, y);
+                ctx.lineTo(Math.min(endX, gapStart), y);
+            }
+
+            if (gapEnd < endX) {
+                ctx.moveTo(Math.max(startX, gapEnd), y);
+                ctx.lineTo(endX, y);
+            }
+            ctx.stroke();
+        }
+
+        function draw() {
+            const W = canvas.width;
+            const H = canvas.height;
+            const CX = W / 2;
+            const CY = H / 2;
+            const scale = val('scale') / 100;
+            const gX = val('gX');
+            const isAnimated = animateToggle.checked;
+            const isTransparent = transparentToggle.checked;
+            const time = performance.now();
+            const speed = val('speed') / 5000;
+            const wobbleStr = val('wobble');
+
+            // --- Background Handling ---
+            if (isTransparent) {
+                ctx.clearRect(0, 0, W, H);
+            } else {
+                ctx.fillStyle = val('bg');
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            ctx.save();
+            ctx.translate(CX, CY);
+            ctx.translate(gX, 0); // Apply Global X
+            ctx.scale(scale, scale);
+            ctx.translate(-CX, -CY);
+
+            const fg = val('fg');
+            // If transparent, we can't use BG color for mask. 
+            // We must use 'destination-out' compositing to punch a hole.
+            // Or if not transparent, we use BG color.
+            const bg = val('bg'); 
+
+            const cRadius = val('cr');
+            const cThick = val('ct');
+            const cXOffset = val('cx');
+            
+            // Bounce Logic
+            let bounceY = 0;
+            if(isAnimated && wobbleStr > 0) {
+                bounceY = Math.sin(time * 0.01) * wobbleStr;
+            }
+
+            const circleCenter = { x: CX + cXOffset, y: CY + bounceY };
+            
+            const count = val('lc');
+            const lThick = val('lt');
+            const lSpread = val('ls');
+            const lAnchor = val('la'); 
+            const blockHeight = (count - 1) * lSpread;
+            const startY = CY - (blockHeight / 2);
+
+            ctx.lineCap = 'round';
+            ctx.fillStyle = fg;
+            ctx.strokeStyle = fg;
+
+            // 1. Draw Speed Lines
+            // If transparent mode is ON, we need to be careful.
+            // We can draw lines normally first.
+            for(let i=0; i<count; i++) {
+                const idx = i+1;
+                const len = val(`len${idx}`);
+                let split = val(`split${idx}`);
+                
+                // Auto-Ignition for animation
+                if(isAnimated && split === 0) split = 50;
+
+                if(len <= 0) continue;
+
+                const y = startY + (i * lSpread);
+                const staticCenterX = CX + cXOffset; 
+                const endX = staticCenterX + lAnchor;
+                const startX = endX - len;
+
+                const offsets = [0, 0.2, 0.7, 0.4, 0.9, 0.1];
+                const lineOffset = offsets[i % offsets.length];
+                const progress = (time * speed + lineOffset) % 1.6;
+
+                drawLineWithSplit(startX, endX, y, lThick, split, progress, isAnimated);
+            }
+
+            // 2. The Masking Circle
+            const lGap = val('lg');
+            const maskRadius = cRadius + (cThick/2) + lGap;
+            
+            if (isTransparent) {
+                // Punch a hole
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath();
+                ctx.arc(circleCenter.x, circleCenter.y, Math.max(0, maskRadius), 0, Math.PI*2);
+                ctx.fillStyle = 'black'; // Color doesn't matter for destination-out
+                ctx.fill();
+                ctx.globalCompositeOperation = 'source-over'; // Reset
+            } else {
+                // Draw BG color
+                ctx.beginPath();
+                ctx.arc(circleCenter.x, circleCenter.y, Math.max(0, maskRadius), 0, Math.PI*2);
+                ctx.fillStyle = bg;
+                ctx.fill();
+            }
+
+            // 3. Main Ring
+            ctx.beginPath();
+            ctx.arc(circleCenter.x, circleCenter.y, cRadius, 0, Math.PI*2);
+            ctx.lineWidth = cThick;
+            ctx.strokeStyle = fg;
+            ctx.stroke();
+
+            // 4. Triangle
+            const tSize = val('ts');
+            const tRound = val('tr');
+            const tOffX = val('tox');
+            const tThick = val('tt');
+            const isFilled = filledTriangleToggle.checked;
+            const triCenter = { x: circleCenter.x + tOffX, y: circleCenter.y };
+
+            const p1 = { x: triCenter.x + tSize, y: triCenter.y };
+            const p2 = { x: triCenter.x - (tSize*0.5), y: triCenter.y + (tSize*0.866) };
+            const p3 = { x: triCenter.x - (tSize*0.5), y: triCenter.y - (tSize*0.866) };
+
+            ctx.beginPath();
+            drawRoundedPoly(ctx, [p1, p2, p3], tRound);
+            if (isFilled) {
+                ctx.fillStyle = fg;
+                ctx.fill();
+            } else {
+                ctx.lineWidth = tThick;
+                ctx.strokeStyle = fg;
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        function drawRoundedPoly(ctx, points, radius) {
+            const len = points.length;
+            const pts = [...points, points[0], points[1]]; 
+            const startX = (pts[0].x + pts[1].x) / 2;
+            const startY = (pts[0].y + pts[1].y) / 2;
+            ctx.moveTo(startX, startY);
+            for(let i=1; i<=len; i++) {
+                const p2 = pts[i];
+                const p3 = pts[i+1];
+                ctx.arcTo(p2.x, p2.y, p3.x, p3.y, radius);
+            }
+            ctx.closePath();
+        }
+
+        function loop() {
+            if(animateToggle.checked) {
+                draw();
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+
+        function resetToDefaults() {
+            // Default values for all controls
+            const defaults = {
+                globalX: 0, masterScale: 100,
+                bgColor: '#161b22', fgColor: '#ffffff',
+                animSpeed: 15, wobbleStr: 12,
+                cRadius: 224, cThick: 45, cX: 60,
+                tSize: 130, tThick: 45, tRound: 25, tOffX: 0,
+                lCount: 5, lThick: 40, lSpread: 100, lGap: 35, lAnchor: -192,
+                len1: 196, split1: 66,
+                len2: 300, split2: 0,
+                len3: 311, split3: 77,
+                len4: 280, split4: 0,
+                len5: 150, split5: 0,
+                len6: 150, split6: 0,
+                gridSize: 3
+            };
+
+            // Reset all sliders
+            Object.keys(defaults).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.value = defaults[id];
+                    const display = document.getElementById(`v_${id}`);
+                    if (display) display.textContent = defaults[id];
+                }
+            });
+
+            // Reset checkboxes
+            document.getElementById('animateToggle').checked = true;
+            document.getElementById('transparentBg').checked = false;
+            document.getElementById('filledTriangle').checked = false;
+            document.getElementById('showGrid').checked = false;
+            document.getElementById('showCenter').checked = false;
+            document.getElementById('showGuides').checked = false;
+
+            // Show triangle stroke control (hollow is default)
+            triangleStrokeControl.style.display = 'block';
+
+            // Reset guide controls visibility
+            guideControlsDiv.style.display = 'none';
+            guideCanvas.classList.remove('editing');
+
+            // Clear custom guides
+            clearAllGuides();
+
+            // Update UI and redraw
+            updateUI();
+            draw();
+            drawGuides();
+
+            // Restart animation loop
+            if (document.getElementById('animateToggle').checked) {
+                loop();
+            }
+        }
+
+        function downloadSize(size) {
+            const ts = new Date().getTime();
+            
+            // If it's the full size, just download existing canvas
+            if(size === 'full') {
+                // Ensure latest frame is drawn
+                if(!animateToggle.checked) draw(); 
+                const link = document.createElement('a');
+                link.download = `logo_master_${ts}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                return;
+            }
+
+            // For icons, create temp canvas and resize
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = size;
+            tempCanvas.height = size;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // High quality scaling
+            tempCtx.imageSmoothingEnabled = true;
+            tempCtx.imageSmoothingQuality = 'high';
+            
+            // Draw the large canvas onto the small one
+            if(!animateToggle.checked) draw();
+            tempCtx.drawImage(canvas, 0, 0, size, size);
+            
+            const link = document.createElement('a');
+            link.download = `icon_${size}x${size}.png`;
+            link.href = tempCanvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Start
+        updateUI();
+        draw(); // Initial draw
+        loop();
+
+        // ============ GUIDES & RULERS SYSTEM ============
+        const guideCanvas = document.getElementById('guideCanvas');
+        const guideCtx = guideCanvas.getContext('2d');
+        const previewWrapper = document.getElementById('previewWrapper');
+
+        const showGridToggle = document.getElementById('showGrid');
+        const showCenterToggle = document.getElementById('showCenter');
+        const showGuidesToggle = document.getElementById('showGuides');
+        const guideControlsDiv = document.getElementById('guideControls');
+        const gridSizeControl = document.getElementById('gridSizeControl');
+        const gridSizeSlider = document.getElementById('gridSize');
+        const gridSizeDisplay = document.getElementById('v_gridSize');
+
+        let customGuides = { horizontal: [], vertical: [] };
+        let isDraggingGuide = null;
+        let isAddingGuide = false;
+
+        // Sync guide canvas size with main canvas display size
+        function syncGuideCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            guideCanvas.style.width = rect.width + 'px';
+            guideCanvas.style.height = rect.height + 'px';
+        }
+
+        // Draw all guides/rulers
+        function drawGuides() {
+            const W = guideCanvas.width;
+            const H = guideCanvas.height;
+            guideCtx.clearRect(0, 0, W, H);
+
+            // NxN Grid
+            if (showGridToggle.checked) {
+                const divisions = parseInt(gridSizeSlider.value, 10);
+                guideCtx.strokeStyle = 'rgba(255, 200, 0, 0.5)';
+                guideCtx.lineWidth = 2;
+                guideCtx.setLineDash([10, 5]);
+
+                guideCtx.beginPath();
+                // Vertical lines
+                for (let i = 1; i < divisions; i++) {
+                    const x = (W / divisions) * i;
+                    guideCtx.moveTo(x, 0);
+                    guideCtx.lineTo(x, H);
+                }
+                // Horizontal lines
+                for (let i = 1; i < divisions; i++) {
+                    const y = (H / divisions) * i;
+                    guideCtx.moveTo(0, y);
+                    guideCtx.lineTo(W, y);
+                }
+                guideCtx.stroke();
+                guideCtx.setLineDash([]);
+            }
+
+            // Center Crosshairs
+            if (showCenterToggle.checked) {
+                guideCtx.strokeStyle = 'rgba(0, 255, 100, 0.7)';
+                guideCtx.lineWidth = 2;
+                guideCtx.setLineDash([15, 8]);
+
+                guideCtx.beginPath();
+                // Vertical center
+                guideCtx.moveTo(W / 2, 0);
+                guideCtx.lineTo(W / 2, H);
+                // Horizontal center
+                guideCtx.moveTo(0, H / 2);
+                guideCtx.lineTo(W, H / 2);
+                guideCtx.stroke();
+                guideCtx.setLineDash([]);
+
+                // Center dot
+                guideCtx.fillStyle = 'rgba(0, 255, 100, 0.9)';
+                guideCtx.beginPath();
+                guideCtx.arc(W / 2, H / 2, 6, 0, Math.PI * 2);
+                guideCtx.fill();
+            }
+
+            // Custom Guides
+            if (showGuidesToggle.checked) {
+                guideCtx.strokeStyle = 'rgba(0, 200, 255, 0.8)';
+                guideCtx.lineWidth = 2;
+                guideCtx.setLineDash([]);
+
+                customGuides.horizontal.forEach(y => {
+                    guideCtx.beginPath();
+                    guideCtx.moveTo(0, y);
+                    guideCtx.lineTo(W, y);
+                    guideCtx.stroke();
+                });
+
+                customGuides.vertical.forEach(x => {
+                    guideCtx.beginPath();
+                    guideCtx.moveTo(x, 0);
+                    guideCtx.lineTo(x, H);
+                    guideCtx.stroke();
+                });
+            }
+        }
+
+        // Get canvas-relative coordinates from mouse event
+        function getCanvasCoords(e) {
+            const rect = guideCanvas.getBoundingClientRect();
+            const scaleX = guideCanvas.width / rect.width;
+            const scaleY = guideCanvas.height / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        // Find guide near position (within threshold)
+        function findGuideNear(pos, threshold = 20) {
+            for (let i = 0; i < customGuides.horizontal.length; i++) {
+                if (Math.abs(customGuides.horizontal[i] - pos.y) < threshold) {
+                    return { type: 'horizontal', index: i };
+                }
+            }
+            for (let i = 0; i < customGuides.vertical.length; i++) {
+                if (Math.abs(customGuides.vertical[i] - pos.x) < threshold) {
+                    return { type: 'vertical', index: i };
+                }
+            }
+            return null;
+        }
+
+        // Guide canvas mouse handlers
+        guideCanvas.addEventListener('mousedown', (e) => {
+            if (!showGuidesToggle.checked) return;
+
+            const pos = getCanvasCoords(e);
+            const nearGuide = findGuideNear(pos);
+
+            if (nearGuide) {
+                isDraggingGuide = nearGuide;
+                guideCanvas.style.cursor = nearGuide.type === 'horizontal' ? 'ns-resize' : 'ew-resize';
+            }
+        });
+
+        guideCanvas.addEventListener('mousemove', (e) => {
+            if (!showGuidesToggle.checked) return;
+
+            const pos = getCanvasCoords(e);
+
+            if (isDraggingGuide) {
+                if (isDraggingGuide.type === 'horizontal') {
+                    customGuides.horizontal[isDraggingGuide.index] = Math.max(0, Math.min(guideCanvas.height, pos.y));
+                } else {
+                    customGuides.vertical[isDraggingGuide.index] = Math.max(0, Math.min(guideCanvas.width, pos.x));
+                }
+                drawGuides();
+            } else {
+                // Update cursor based on proximity to guides
+                const nearGuide = findGuideNear(pos);
+                if (nearGuide) {
+                    guideCanvas.style.cursor = nearGuide.type === 'horizontal' ? 'ns-resize' : 'ew-resize';
+                } else {
+                    guideCanvas.style.cursor = 'crosshair';
+                }
+            }
+        });
+
+        guideCanvas.addEventListener('mouseup', (e) => {
+            if (isDraggingGuide) {
+                isDraggingGuide = null;
+                guideCanvas.style.cursor = 'crosshair';
+                return;
+            }
+
+            if (!showGuidesToggle.checked) return;
+
+            const pos = getCanvasCoords(e);
+            const nearGuide = findGuideNear(pos);
+
+            // If not near existing guide, add new one
+            if (!nearGuide) {
+                // Decide horizontal or vertical based on position
+                // Click in left/right 20% = vertical, else horizontal
+                const edgeThreshold = guideCanvas.width * 0.2;
+                if (pos.x < edgeThreshold || pos.x > guideCanvas.width - edgeThreshold) {
+                    customGuides.vertical.push(pos.x);
+                } else {
+                    customGuides.horizontal.push(pos.y);
+                }
+                drawGuides();
+            }
+        });
+
+        guideCanvas.addEventListener('dblclick', (e) => {
+            if (!showGuidesToggle.checked) return;
+
+            const pos = getCanvasCoords(e);
+            const nearGuide = findGuideNear(pos);
+
+            if (nearGuide) {
+                // Remove the guide
+                if (nearGuide.type === 'horizontal') {
+                    customGuides.horizontal.splice(nearGuide.index, 1);
+                } else {
+                    customGuides.vertical.splice(nearGuide.index, 1);
+                }
+                drawGuides();
+            }
+        });
+
+        function clearAllGuides() {
+            customGuides = { horizontal: [], vertical: [] };
+            drawGuides();
+        }
+
+        // Toggle handlers
+        showGridToggle.addEventListener('change', drawGuides);
+        gridSizeSlider.addEventListener('input', () => {
+            gridSizeDisplay.textContent = gridSizeSlider.value;
+            drawGuides();
+        });
+        showCenterToggle.addEventListener('change', drawGuides);
+        showGuidesToggle.addEventListener('change', () => {
+            guideControlsDiv.style.display = showGuidesToggle.checked ? 'block' : 'none';
+            guideCanvas.classList.toggle('editing', showGuidesToggle.checked);
+            drawGuides();
+        });
+
+        // Initialize custom guides visibility based on checkbox state
+        if (showGuidesToggle.checked) {
+            guideControlsDiv.style.display = 'block';
+            guideCanvas.classList.add('editing');
+        }
+
+        // Sync and draw on load and resize
+        window.addEventListener('resize', () => {
+            syncGuideCanvas();
+            drawGuides();
+        });
+
+        // Initial sync
+        setTimeout(() => {
+            syncGuideCanvas();
+            drawGuides();
+        }, 100);
+
+    </script>
+</body>
+</html>
