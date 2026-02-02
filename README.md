@@ -9,14 +9,18 @@ Advanced YouTube playback speed control with customizable hotkeys, SLAP toggle, 
 ## Screenshots
 
 <p align="center">
-  <img src="screenshots/youtube-demo.png" alt="SpeedSlap on YouTube" width="600">
+  <img src="screenshots/youtube-demo.png" alt="SpeedSlap on YouTube" width="700">
 </p>
 
+<br>
+
 <p align="center">
-  <img src="screenshots/overlay.png" alt="Overlay widget" width="180">
-  <img src="screenshots/popup-top.png" alt="Settings" width="220">
-  <img src="screenshots/popup-bottom.png" alt="Settings toggles" width="220">
+  <img src="screenshots/overlay.png" alt="Overlay widget" width="160">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="screenshots/popup-top.png" alt="Settings" width="240">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="screenshots/popup-bottom.png" alt="Settings toggles" width="240">
 </p>
+
+<br>
 
 ## Features
 
