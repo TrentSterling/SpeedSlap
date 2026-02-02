@@ -8,6 +8,7 @@ const defaultHotkeys = {
 
 let hotkeys = { ...defaultHotkeys };
 let recordingAction = null;
+let saveTimeout = null;
 
 // Convert key code to display name
 function keyCodeToDisplay(hotkey) {
@@ -74,6 +75,36 @@ function updateHotkeyDisplays() {
     document.getElementById('hotkeyReset').textContent = keyCodeToDisplay(hotkeys.reset);
 }
 
+// Show saved indicator briefly
+function showSaved() {
+    const msg = document.getElementById('savedMsg');
+    msg.style.display = 'block';
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+        msg.style.display = 'none';
+    }, 1500);
+}
+
+// Save all settings (autosave)
+function saveSettings() {
+    const minSpeed = parseFloat(document.getElementById('minSpeed').value);
+    const maxSpeed = parseFloat(document.getElementById('maxSpeed').value);
+    const toggleSpeed = parseFloat(document.getElementById('toggleSpeed').value);
+    const enableScrollWheel = document.getElementById('enableScrollWheel').checked;
+    const showOverlay = document.getElementById('showOverlay').checked;
+    const showToasts = document.getElementById('showToasts').checked;
+    const enableCaptions = document.getElementById('enableCaptions').checked;
+
+    // Validate silently - don't save if invalid
+    if (minSpeed >= maxSpeed) return;
+    if (toggleSpeed < minSpeed || toggleSpeed > maxSpeed) return;
+
+    chrome.storage.sync.set({
+        minSpeed, maxSpeed, toggleSpeed, hotkeys,
+        enableScrollWheel, showOverlay, showToasts, enableCaptions
+    }, showSaved);
+}
+
 // Handle key recording
 function handleKeyRecording(e) {
     if (!recordingAction) return;
@@ -102,6 +133,7 @@ function handleKeyRecording(e) {
 
     stopRecording();
     updateHotkeyDisplays();
+    saveSettings(); // Autosave after hotkey change
 }
 
 // Start recording a hotkey
@@ -179,33 +211,12 @@ document.addEventListener('DOMContentLoaded', () => {
             startRecording(btn.dataset.action);
         });
     });
-});
 
-// Save settings
-document.getElementById('saveSettings').addEventListener('click', () => {
-    const minSpeed = parseFloat(document.getElementById('minSpeed').value);
-    const maxSpeed = parseFloat(document.getElementById('maxSpeed').value);
-    const toggleSpeed = parseFloat(document.getElementById('toggleSpeed').value);
-    const enableScrollWheel = document.getElementById('enableScrollWheel').checked;
-    const showOverlay = document.getElementById('showOverlay').checked;
-    const showToasts = document.getElementById('showToasts').checked;
-    const enableCaptions = document.getElementById('enableCaptions').checked;
-
-    // Validate
-    if (minSpeed >= maxSpeed) {
-        alert('Min speed must be less than max speed!');
-        return;
-    }
-    if (toggleSpeed < minSpeed || toggleSpeed > maxSpeed) {
-        alert('Toggle speed must be within the speed range!');
-        return;
-    }
-
-    chrome.storage.sync.set({ minSpeed, maxSpeed, toggleSpeed, hotkeys, enableScrollWheel, showOverlay, showToasts, enableCaptions }, () => {
-        const msg = document.getElementById('savedMsg');
-        msg.style.display = 'block';
-        setTimeout(() => {
-            msg.style.display = 'none';
-        }, 2000);
+    // Autosave on any input change
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('change', saveSettings);
+    });
+    document.querySelectorAll('input[type="checkbox"]').forEach(input => {
+        input.addEventListener('change', saveSettings);
     });
 });

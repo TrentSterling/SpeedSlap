@@ -1,4 +1,4 @@
-console.log('SpeedSlap v1.3 running!');
+console.log('SpeedSlap v1.3.1 running!');
 
 let isSpeedOn = false;
 let currentSpeed = 1;
