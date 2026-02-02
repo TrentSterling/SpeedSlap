@@ -2,7 +2,7 @@
 
 Advanced YouTube playback speed control with customizable hotkeys, SLAP toggle, and scroll wheel support.
 
-![Version](https://img.shields.io/badge/version-1.3.1-orange)
+![Version](https://img.shields.io/badge/version-1.3.2-orange)
 ![Manifest](https://img.shields.io/badge/manifest-v3-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -96,6 +96,9 @@ Click the extension icon to configure:
 Settings apply immediately to any open YouTube tabs.
 
 ## Changelog
+
+### v1.3.2 (2026-02-02)
+- Overlay now updates live when settings change (no refresh needed)
 
 ### v1.3.1 (2026-02-02)
 - Autosave - settings save automatically on change, no button needed
