@@ -1,4 +1,4 @@
-console.log('SpeedSlap v1.3.1 running!');
+console.log('SpeedSlap v1.3.2 running!');
 
 let isSpeedOn = false;
 let currentSpeed = 1;
@@ -173,16 +173,29 @@ function loadSettings() {
     });
 }
 
+// Refresh overlay UI to match current settings
+function refreshOverlayUI() {
+    // Clamp current speed to new bounds
+    currentSpeed = Math.max(minSpeed, Math.min(maxSpeed, currentSpeed));
+    // Update slider
+    speedSlider.min = minSpeed;
+    speedSlider.max = maxSpeed;
+    speedSlider.value = currentSpeed;
+    // Update label
+    sliderLabel.textContent = `Speed: ${currentSpeed}x`;
+    // Apply to video
+    const video = document.querySelector('video');
+    if (video) video.playbackRate = currentSpeed;
+}
+
 // Listen for settings changes from popup
 chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'sync') {
         if (changes.minSpeed) {
             minSpeed = parseFloat(changes.minSpeed.newValue);
-            speedSlider.min = minSpeed;
         }
         if (changes.maxSpeed) {
             maxSpeed = parseFloat(changes.maxSpeed.newValue);
-            speedSlider.max = maxSpeed;
         }
         if (changes.toggleSpeed) {
             toggleSpeed = parseFloat(changes.toggleSpeed.newValue);
@@ -204,6 +217,8 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
             enableCaptions = changes.enableCaptions.newValue;
             updateCaptionsInterval();
         }
+        // Refresh the overlay UI
+        refreshOverlayUI();
         showNotification('Settings updated!');
     }
 });
