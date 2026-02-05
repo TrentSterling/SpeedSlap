@@ -49,6 +49,25 @@ Object.assign(controlsContainer.style, {
 });
 document.body.appendChild(controlsContainer);
 
+// Clamp overlay position to stay within the visible viewport
+function clampToViewport() {
+    const rect = controlsContainer.getBoundingClientRect();
+    const maxX = window.innerWidth - rect.width;
+    const maxY = window.innerHeight - rect.height;
+    const clampedX = Math.max(0, Math.min(parseFloat(controlsContainer.style.left) || 0, maxX));
+    const clampedY = Math.max(0, Math.min(parseFloat(controlsContainer.style.top) || 0, maxY));
+    controlsContainer.style.left = `${clampedX}px`;
+    controlsContainer.style.top = `${clampedY}px`;
+    localStorage.setItem('uiX', controlsContainer.style.left);
+    localStorage.setItem('uiY', controlsContainer.style.top);
+}
+
+// Clamp after first frame so the element has dimensions
+requestAnimationFrame(() => clampToViewport());
+
+// Re-clamp on window resize or zoom change
+window.addEventListener('resize', clampToViewport);
+
 // Header row with icon
 const headerRow = document.createElement('div');
 Object.assign(headerRow.style, {
@@ -96,8 +115,7 @@ controlsContainer.addEventListener('mousedown', (e) => {
     };
     const stopDrag = () => {
         dragging = false;
-        localStorage.setItem('uiX', controlsContainer.style.left);
-        localStorage.setItem('uiY', controlsContainer.style.top);
+        clampToViewport();
         document.removeEventListener('mousemove', moveHandler);
         document.removeEventListener('mouseup', stopDrag);
     };
