@@ -150,6 +150,12 @@ Settings apply immediately to any open YouTube tabs.
 - Auto-hide, position/speed persistence
 - Auto caption enable
 
+## Links
+
+- **Landing Page:** [tront.xyz/speedslap](https://tront.xyz/speedslap/)
+- **Blog Post:** [blog.tront.xyz - SpeedSlap v1.2](https://blog.tront.xyz/posts/speedslap-chrome-extension/)
+- **Releases:** [GitHub Releases](https://github.com/TrentSterling/speedslap/releases)
+
 ## Author
 
 **Trent Sterling** - [tront.xyz](https://tront.xyz)
