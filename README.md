@@ -153,7 +153,7 @@ Settings apply immediately to any open YouTube tabs.
 ## Links
 
 - **Landing Page:** [tront.xyz/speedslap](https://tront.xyz/speedslap/)
-- **Blog Post:** [blog.tront.xyz - SpeedSlap v1.2](https://blog.tront.xyz/posts/speedslap-chrome-extension/)
+- **Blog Post:** [tront.xyz/blog - SpeedSlap v1.2](https://tront.xyz/blog/posts/speedslap-chrome-extension/)
 - **Releases:** [GitHub Releases](https://github.com/TrentSterling/speedslap/releases)
 
 ## Author
